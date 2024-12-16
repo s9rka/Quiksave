@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"notas/database"
 	"notas/routes"
 
 	"github.com/gorilla/mux"
@@ -19,10 +20,20 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
+	err = database.InitDb() 
+	if err != nil {
+		log.Fatalf("Database initialization failed: %v", err)
+	}
+
 	router := mux.NewRouter()
+	// Public
 	router.HandleFunc("/", routes.HomeHandler)
 	router.HandleFunc("/register", routes.RegisterHandler)
 	router.HandleFunc("/login", routes.LoginHandler)
+
+	// Private
+	router.HandleFunc("/new-note", routes.NewNote)
+
 
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
