@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	auth "notas/authentication"
 	"notas/models"
 	"strings"
 	"time"
@@ -13,7 +14,7 @@ func AddNewNoteToDB(note models.Note) (int, error) {
 	defer cancel()
 
 	var noteID int
-	newNoteQuery := "INSERT INTO notes (title, content, tags) VALUES ($1, $2, $3) RETURNING id"
+	newNoteQuery := `INSERT INTO notes (title, content, tags) VALUES ($1, $2, $3) RETURNING id`
 
 	err := dbPool.QueryRow(ctx, newNoteQuery, note.Title, note.Content, note.Tags).Scan(&noteID)
 	if err != nil {
@@ -31,7 +32,7 @@ func AddNewNoteToDB(note models.Note) (int, error) {
 		if err != nil {
 			// If no ID was returned (tag already exists), fetch the ID
 			if strings.Contains(err.Error(), "no rows in result set") {
-				err = dbPool.QueryRow(ctx, "SELECT id FROM tags WHERE name = $1", tag).Scan(&tagID)
+				err = dbPool.QueryRow(ctx, `SELECT id FROM tags WHERE name = $1`, tag).Scan(&tagID)
 				if err != nil {
 					return 0, fmt.Errorf("failed to get tag ID for '%s': %w", tag, err)
 				}
@@ -44,7 +45,7 @@ func AddNewNoteToDB(note models.Note) (int, error) {
 
 	// Insert associations into  'note_tags' table
 	for _, tagID := range tagIDs {
-		noteTagQuery := "INSERT INTO note_tags (note_id, tag_id) VALUES ($1, $2)"
+		noteTagQuery := `INSERT INTO note_tags (note_id, tag_id) VALUES ($1, $2)`
 		_, err := dbPool.Exec(ctx, noteTagQuery, noteID, tagID)
 		if err != nil {
 			return 0, fmt.Errorf("failed to associate note with tag ID %d: %w", tagID, err)
@@ -85,4 +86,25 @@ func GetNotesFromDB() ([]models.Note, error) {
 	}
 
 	return notes, nil
+}
+
+
+func AddUserToDB(user models.User) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
+	defer cancel()
+
+	var userID int
+	hashedPassword, err := auth.GenerateHashedPassword(user.Password)
+	if err != nil {
+		return 0, fmt.Errorf("failed to hash password: %v", err)
+	}
+
+	addUserQuery := `INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id`
+
+	err = dbPool.QueryRow(ctx, addUserQuery, user.Username, user.Email, hashedPassword).Scan(&userID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to insert user: %v", err)
+	}
+
+	return userID, nil
 }
