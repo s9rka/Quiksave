@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: nota-bene-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: nota-bene-admin
+      POSTGRES_PASSWORD: passPass1
+      POSTGRES_DB: nota-bene
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d:ro
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
