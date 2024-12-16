@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	auth "notas/authentication"
 	"notas/models"
 	"strings"
 	"time"
@@ -88,23 +87,3 @@ func GetNotesFromDB() ([]models.Note, error) {
 	return notes, nil
 }
 
-
-func AddUserToDB(user models.User) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
-	defer cancel()
-
-	var userID int
-	hashedPassword, err := auth.GenerateHashedPassword(user.Password)
-	if err != nil {
-		return 0, fmt.Errorf("failed to hash password: %v", err)
-	}
-
-	addUserQuery := `INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id`
-
-	err = dbPool.QueryRow(ctx, addUserQuery, user.Username, user.Email, hashedPassword).Scan(&userID)
-	if err != nil {
-		return 0, fmt.Errorf("failed to insert user: %v", err)
-	}
-
-	return userID, nil
-}

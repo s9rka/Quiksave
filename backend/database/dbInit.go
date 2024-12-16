@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -27,6 +28,6 @@ func InitDb() error {
 	if err != nil {
 		return fmt.Errorf("unable to create connection pool: %w", err)
 	}
-	fmt.Println("Database connection achieved!")
+	log.Println("Database connection achieved!")
 	return nil
 }
