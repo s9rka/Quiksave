@@ -32,7 +32,8 @@ func main() {
 	router.HandleFunc("/login", routes.LoginHandler)
 
 	// Private
-	router.HandleFunc("/new-note", routes.NewNote)
+	router.HandleFunc("/create-note", routes.CreateNote)
+	router.HandleFunc("/get-notes", routes.GetNotes)
 
 
 	host := os.Getenv("HOST")

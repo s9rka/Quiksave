@@ -6,11 +6,10 @@ import (
 	"notas/models"
 	"strings"
 	"time"
-
 )
 
-func CreateNote(note models.Note) (int, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 3)
+func AddNewNoteToDB(note models.Note) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
 	var noteID int
@@ -53,4 +52,37 @@ func CreateNote(note models.Note) (int, error) {
 	}
 
 	return noteID, nil
+}
+
+func GetNotesFromDB() ([]models.Note, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	getNotesQuery := `SELECT n.id, n.title, n.content, n.created_at, COALESCE(ARRAY_AGG(t.name), '{}') AS tags FROM notes n
+						LEFT JOIN note_tags nt ON n.id = nt.note_id
+						LEFT JOIN tags t ON nt.tag_id = t.id
+						GROUP BY n.id
+						ORDER BY n.created_at DESC
+						`
+	rows, err := dbPool.Query(ctx, getNotesQuery)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch notes: %w", err)
+	}
+	defer rows.Close()
+
+	var notes []models.Note
+	for rows.Next() {
+		var note models.Note
+		var tags []string
+
+		err := rows.Scan(&note.ID, &note.Title, &note.Content, &note.CreatedAt, &tags)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan note: %w", err)
+		}
+
+		note.Tags = tags
+		notes = append(notes, note)
+	}
+
+	return notes, nil
 }
