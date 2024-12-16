@@ -8,6 +8,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Endpoint accepts GET method", http.StatusMethodNotAllowed)
 	}
+	w.WriteHeader(400)
 }
 
 func RegisterHandler(w http.ResponseWriter, r *http.Request) {
