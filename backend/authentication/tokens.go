@@ -1,8 +1,6 @@
 package auth
 
 import (
-	"encoding/hex"
-	"crypto/rand"
 	"os"
 	"strconv"
 	"time"
@@ -33,36 +31,20 @@ func GenerateJWT(userID int) (string, error) {
 	return accessToken.SignedString(jwtSecret)
 }
 
-func generateJTI() (string, error) {
-	bytes := make([]byte, 16)
-	_, err := rand.Read(bytes)
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(bytes), nil
-}
 
 func GenerateRefreshToken(userID int) (string, error) {
-	jti, err := generateJTI()
-	if err != nil {
-		return "", err
-	}
+	expirationTime := time.Now().Add(7 * 24 * time.Hour)
 
-	expirationTime := time.Now().Add(24 * time.Hour)
-
-	// Claims with UserID, jti, and expiry
 	claims := jwt.RegisteredClaims{
 		Subject:   strconv.Itoa(userID),
-		ID:        jti,
 		ExpiresAt: jwt.NewNumericDate(expirationTime),
 		Issuer:    "nota_bene",
 		IssuedAt:  jwt.NewNumericDate(time.Now()),
 	}
 
-	
-	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	return refreshToken.SignedString(jwtSecret)
+	return token.SignedString(jwtSecret)
 }
 
 func ValidateJWT(tokenStr string) (*Claims, error) {
