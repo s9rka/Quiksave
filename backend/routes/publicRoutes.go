@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	auth "notas/authentication"
 	"notas/database"
 	"notas/models"
+	"time"
 )
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,12 +68,17 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type LoginResponse struct {
+	Message      string `json:"message"`
+	AccessToken  string `json:"accessToken"`
+}
+
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 	}
-	var loginRequest LoginRequest
 
+	var loginRequest LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -80,13 +87,39 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := database.ValidateUserLogin(loginRequest.Username, loginRequest.Password)
 	if err != nil {
 		http.Error(w, "Wrong username or password", http.StatusUnauthorized)
+		return
 	}
 
-	response := fmt.Sprintf("User %d successfully logged in!", userID)
+	accessToken, err := auth.GenerateJWT(userID)
+	if err != nil {
+		http.Error(w, "Failed to generate access token", http.StatusInternalServerError)
+		return
+	}
+
+	refreshToken, err := auth.GenerateRefreshToken(userID)
+	if err != nil {
+		http.Error(w, "Failed to generate refresh token", http.StatusInternalServerError)
+		return
+	}
+
+	http.SetCookie(w, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Expires:  time.Now().Add(24 * time.Hour),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+
+	response := LoginResponse{
+		Message: "Login successful!",
+		AccessToken: accessToken,
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err = json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("Failed to encode response: %v", err)
 		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
+		return
 	}
 }
