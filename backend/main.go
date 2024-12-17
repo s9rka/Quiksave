@@ -34,7 +34,7 @@ func main() {
 	// Private
 	router.HandleFunc("/create-note", routes.CreateNote)
 	router.HandleFunc("/get-notes", routes.GetNotes)
-	router.HandleFunc("/refresh-token", routes.RefreshJWT)
+	router.HandleFunc("/refresh", routes.RefreshJWT)
 
 
 	host := os.Getenv("HOST")
