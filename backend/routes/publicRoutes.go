@@ -33,9 +33,9 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if user.Username == "" || user.Email == "" || user.Password == "" {
-        http.Error(w, "Missing required fields: username, email, or password.", http.StatusBadRequest)
-        return
-    }
+		http.Error(w, "Missing required fields: username, email, or password.", http.StatusBadRequest)
+		return
+	}
 
 	userID, err := database.AddUserToDB(user)
 	if err != nil {
@@ -52,8 +52,8 @@ func RegisterHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := map[string]interface{} {
-		"userID": userID,
+	response := map[string]interface{}{
+		"userID":  userID,
 		"message": "User successfully created!",
 	}
 
@@ -71,8 +71,8 @@ type LoginRequest struct {
 }
 
 type LoginResponse struct {
-	Message      string `json:"message"`
-	AccessToken  string `json:"accessToken"`
+	Message     string `json:"message"`
+	AccessToken string `json:"accessToken"`
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -108,14 +108,15 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "refresh_token",
 		Value:    refreshToken,
-		Expires:  time.Now().Add(24 * time.Hour),
+		Expires:  time.Now().Add(7 * 24 * time.Hour),
+		Path:     "/",
 		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
+		Secure:   false,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	response := LoginResponse{
-		Message: "Login successful!",
+		Message:     "Login successful!",
 		AccessToken: accessToken,
 	}
 

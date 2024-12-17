@@ -33,5 +33,3 @@ CREATE TABLE IF NOT EXISTS note_tags (
 
 -- Create indexing for notes
 CREATE INDEX idx_user_id ON notes(user_id);
-
-

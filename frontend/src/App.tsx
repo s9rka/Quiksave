@@ -1,15 +1,21 @@
-import './App.css'
-import HomePage from './components/HomePage'
+import { createRouter, RouterProvider } from "@tanstack/react-router";
+import "./App.css";
+import { routeTree } from "./routeTree.gen";
 
-function App() {
+const router = createRouter({ routeTree });
 
-  return (
-    <>
-      <div>
-        <HomePage/>
-        </div>
-    </>
-  )
+declare module "@tanstack/react-router" {
+  interface Register {
+    router: typeof router;
+  }
 }
 
-export default App
+function App() {
+  return (
+    <div>
+      <RouterProvider router={router} />
+    </div>
+  );
+}
+
+export default App;

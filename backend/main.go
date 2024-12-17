@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"notas/database"
+	"notas/middleware"
 	"notas/routes"
 
 	"github.com/gorilla/mux"
@@ -36,6 +37,7 @@ func main() {
 	router.HandleFunc("/get-notes", routes.GetNotes)
 	router.HandleFunc("/refresh", routes.RefreshJWT)
 
+	corsRouter := middleware.CORSMiddleware(router)
 
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
@@ -45,7 +47,7 @@ func main() {
 		Addr:         addr,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
-		Handler:      router,
+		Handler:      corsRouter,
 	}
 
 	log.Printf("Server running on %s", addr)
