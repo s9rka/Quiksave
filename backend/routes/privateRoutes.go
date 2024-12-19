@@ -9,9 +9,11 @@ import (
 	"notas/models"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/gorilla/mux"
 )
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
@@ -26,6 +28,13 @@ func CreateNote(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+
+	userID, err := auth.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, "User ID not found", http.StatusUnauthorized)
+	}
+
+	note.UserID = userID
 
 	noteID, err := database.AddNewNoteToDB(note)
 	if err != nil {
@@ -52,7 +61,12 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	notes, err := database.GetNotesFromDB()
+	userID, err := auth.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, "User ID not found", http.StatusUnauthorized)
+	}
+
+	notes, err := database.GetNotesFromDB(userID)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("Failed to get notes: %v", err), http.StatusInternalServerError)
 		return
@@ -61,6 +75,47 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(notes); err != nil {
 		http.Error(w, fmt.Sprintf("Failed to encode notes: %v", err), http.StatusInternalServerError)
+		return
+	}
+}
+
+func GetNoteByID(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	userID, err := auth.GetUserIDFromContext(r.Context())
+	if err != nil {
+		http.Error(w, "User ID not found", http.StatusUnauthorized)
+	}
+
+	vars := mux.Vars(r)
+	noteIDStr := vars["id"]
+	if noteIDStr == "" {
+		http.Error(w, "Missing note ID", http.StatusBadRequest)
+		return
+	}
+
+	noteID, err := strconv.Atoi(noteIDStr)
+	if err != nil {
+		http.Error(w, "Invalid note ID format", http.StatusBadRequest)
+		return
+	}
+
+	note, err := database.GetNoteByIDFromDB(noteID, userID)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Note not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to fetch note", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(note); err != nil {
+		http.Error(w, "Failed to encode note data", http.StatusInternalServerError)
 		return
 	}
 }

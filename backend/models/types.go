@@ -12,6 +12,7 @@ type User struct {
 
 type Note struct {
 	ID int `json:"id"`
+	UserID int `json:"userID"`
 	Title   string   `json:"title"`
 	Content string   `json:"content"`
 	Tags    []string `json:"tags"`

@@ -13,9 +13,9 @@ func AddNewNoteToDB(note models.Note) (int, error) {
 	defer cancel()
 
 	var noteID int
-	newNoteQuery := `INSERT INTO notes (title, content, tags) VALUES ($1, $2, $3) RETURNING id`
+	newNoteQuery := `INSERT INTO notes (user_id, title, content) VALUES ($1, $2, $3) RETURNING id`
 
-	err := dbPool.QueryRow(ctx, newNoteQuery, note.Title, note.Content, note.Tags).Scan(&noteID)
+	err := dbPool.QueryRow(ctx, newNoteQuery, note.UserID, note.Title, note.Content).Scan(&noteID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert note: %w", err)
 	}
@@ -24,14 +24,14 @@ func AddNewNoteToDB(note models.Note) (int, error) {
 	for _, tag := range note.Tags {
 		var tagID int
 		tagQuery := `
-			INSERT INTO tags (name) VALUES ($1)
-			ON CONFLICT (name) DO NOTHING
+			INSERT INTO tags (name, user_id) VALUES ($1, $2)
+			ON CONFLICT (name, user_id) DO NOTHING
 			RETURNING id`
-		err := dbPool.QueryRow(ctx, tagQuery, tag).Scan(&tagID)
+		err := dbPool.QueryRow(ctx, tagQuery, tag, note.UserID).Scan(&tagID)
 		if err != nil {
 			// If no ID was returned (tag already exists), fetch the ID
 			if strings.Contains(err.Error(), "no rows in result set") {
-				err = dbPool.QueryRow(ctx, `SELECT id FROM tags WHERE name = $1`, tag).Scan(&tagID)
+				err = dbPool.QueryRow(ctx, `SELECT id FROM tags WHERE name = $1 AND user_id = $2`, tag, note.UserID).Scan(&tagID)
 				if err != nil {
 					return 0, fmt.Errorf("failed to get tag ID for '%s': %w", tag, err)
 				}
@@ -54,17 +54,18 @@ func AddNewNoteToDB(note models.Note) (int, error) {
 	return noteID, nil
 }
 
-func GetNotesFromDB() ([]models.Note, error) {
+func GetNotesFromDB(userID int) ([]models.Note, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
 	getNotesQuery := `SELECT n.id, n.title, n.content, n.created_at, COALESCE(ARRAY_AGG(t.name), '{}') AS tags FROM notes n
 						LEFT JOIN note_tags nt ON n.id = nt.note_id
 						LEFT JOIN tags t ON nt.tag_id = t.id
+						WHERE n.user_id = $1
 						GROUP BY n.id
 						ORDER BY n.created_at DESC
 						`
-	rows, err := dbPool.Query(ctx, getNotesQuery)
+	rows, err := dbPool.Query(ctx, getNotesQuery, userID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch notes: %w", err)
 	}
@@ -81,9 +82,38 @@ func GetNotesFromDB() ([]models.Note, error) {
 		}
 
 		note.Tags = tags
+		note.UserID = userID
 		notes = append(notes, note)
 	}
 
 	return notes, nil
 }
 
+func GetNoteByIDFromDB(noteID, userID int) (*models.Note, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	query := `
+		SELECT n.id, n.title, n.content, n.created_at, COALESCE(ARRAY_AGG(t.name), '{}') AS tags
+		FROM notes n
+		LEFT JOIN note_tags nt ON n.id = nt.note_id
+		LEFT JOIN tags t ON nt.tag_id = t.id
+		WHERE n.id = $1 AND n.user_id = $2
+		GROUP BY n.id
+	`
+
+	var note models.Note
+	var tags []string
+
+	err := dbPool.QueryRow(ctx, query, noteID, userID).Scan(&note.ID, &note.Title, &note.Content, &note.CreatedAt, &tags)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return nil, fmt.Errorf("note with ID %d not found", noteID)
+		}
+		return nil, fmt.Errorf("failed to fetch note by ID %d: %w", noteID, err)
+	}
+
+	note.Tags = tags
+	note.UserID = userID
+	return &note, nil
+}

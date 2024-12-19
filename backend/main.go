@@ -33,9 +33,14 @@ func main() {
 	router.HandleFunc("/login", routes.LoginHandler)
 
 	// Private
-	router.HandleFunc("/create-note", routes.CreateNote)
-	router.HandleFunc("/get-notes", routes.GetNotes)
-	router.HandleFunc("/refresh", routes.RefreshJWT)
+	private := router.PathPrefix("/").Subrouter()
+	private.HandleFunc("/create-note", routes.CreateNote)
+	private.HandleFunc("/get-notes", routes.GetNotes)
+	private.HandleFunc("/note/{id:[0-9]+}", routes.GetNoteByID)
+
+	private.HandleFunc("/refresh", routes.RefreshJWT)
+
+	private.Use(middleware.AuthMiddleware)
 
 	corsRouter := middleware.CORSMiddleware(router)
 
