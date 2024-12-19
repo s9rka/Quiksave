@@ -13,15 +13,16 @@ CREATE TABLE IF NOT EXISTS notes (
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    tags TEXT[],
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create the tags table
 CREATE TABLE IF NOT EXISTS tags (
     id SERIAL PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    name TEXT NOT NULL,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name, user_id) -- Ensure unique tag names per user
 );
 
 -- Create a junction table to associate notes with tags
@@ -31,5 +32,6 @@ CREATE TABLE IF NOT EXISTS note_tags (
     PRIMARY KEY (note_id, tag_id)
 );
 
--- Create indexing for notes
-CREATE INDEX idx_user_id ON notes(user_id);
+-- Create indexing for efficient queries
+CREATE INDEX idx_notes_user_id ON notes(user_id);
+CREATE INDEX idx_tags_user_id ON tags(user_id);
