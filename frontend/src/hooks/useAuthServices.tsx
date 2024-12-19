@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import apiClient from "../services/api";
 
 interface AuthResponse {
@@ -17,49 +17,25 @@ interface RegisterCredentials {
 }
 
 export const useAuthServices = () => {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Login Mutation
+  const loginMutation = useMutation({
+    mutationFn: async ({ username, password }: LoginCredentials): Promise<AuthResponse> => {
+      const response = await apiClient.post<AuthResponse>("/login", { username, password });
+      return response.data;
+    },
+  });
 
-  const login = async ({ username, password }: LoginCredentials): Promise<string | null> => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const response = await apiClient.post<AuthResponse>("/login", {
-        username,
-        password,
-      });
-      setLoading(false);
-      return response.data.accessToken;
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed.");
-      setLoading(false);
-      return null;
-    }
-  };
-
-  const register = async ({
-    username,
-    email,
-    password,
-  }: RegisterCredentials): Promise<string | null> => {
-    setLoading(true);
-    setError(null);
-
-    try {
+  // Register Mutation
+  const registerMutation = useMutation({
+    mutationFn: async ({ username, email, password }: RegisterCredentials): Promise<AuthResponse> => {
       const response = await apiClient.post<AuthResponse>("/register", {
         username,
         email,
         password,
       });
-      setLoading(false);
-      return response.data.accessToken;
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Registration failed.");
-      setLoading(false);
-      return null;
-    }
-  };
+      return response.data;
+    },
+  });
 
-  return { login, register, loading, error };
+  return { loginMutation, registerMutation };
 };

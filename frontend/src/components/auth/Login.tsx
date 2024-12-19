@@ -5,29 +5,36 @@ import { Label } from "../ui/label";
 import { useAuthServices } from "@/hooks/useAuthServices";
 
 export default function LoginForm() {
-  const { login, loading, error } = useAuthServices();
+  const { loginMutation } = useAuthServices();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const token = await login({ username, password });
-    if (token) {
-      console.log("Access Token:", token);
-      localStorage.setItem("accessToken", token);
-    }
-
-    // Correctly store token
-    // Redirect to home
+    loginMutation.mutate(
+      { username, password },
+      {
+        onSuccess: (data) => {
+          console.log("Access Token:", data.accessToken);
+          localStorage.setItem("accessToken", data.accessToken);
+          // Redirect to home
+        },
+        onError: (error) => {
+          console.error("Login failed:", error.message);
+        },
+      }
+    );
   };
 
   return (
     <div className="max-w-sm mx-auto mt-16 p-6 border rounded-lg shadow-sm text-left">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
-        {error && <p className="text-red-500 text-sm">{error}</p>}
+        {loginMutation.isError && (
+          <p className="text-red-500 text-sm">{(loginMutation.error as Error).message}</p>
+        )}
         <div>
           <Label htmlFor="username" className="block text-sm font-medium mb-2">
             Username
@@ -54,8 +61,8 @@ export default function LoginForm() {
             required
           />
         </div>
-        <Button type="submit" className="w-full">
-          Login
+        <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+          {loginMutation.isPending ? "Logging in..." : "Login"}
         </Button>
       </form>
     </div>
