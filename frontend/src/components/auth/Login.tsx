@@ -18,6 +18,9 @@ export default function LoginForm() {
       console.log("Access Token:", token);
       localStorage.setItem("accessToken", token);
     }
+
+    // Correctly store token
+    // Redirect to home
   };
 
   return (
