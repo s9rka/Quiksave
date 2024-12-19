@@ -1,5 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import apiClient from "../services/api";
+import { authTokenAtom } from "@/store/token";
+import { useSetAtom } from "jotai/react";
 
 interface AuthResponse {
   accessToken: string;
@@ -17,12 +19,16 @@ interface RegisterCredentials {
 }
 
 export const useAuthServices = () => {
+  const setAuthToken = useSetAtom(authTokenAtom)
   // Login Mutation
   const loginMutation = useMutation({
     mutationFn: async ({ username, password }: LoginCredentials): Promise<AuthResponse> => {
       const response = await apiClient.post<AuthResponse>("/login", { username, password });
       return response.data;
     },
+    onSuccess: (data) => {
+      setAuthToken(data.accessToken)
+    }
   });
 
   // Register Mutation
@@ -34,6 +40,9 @@ export const useAuthServices = () => {
         password,
       });
       return response.data;
+    },
+    onSuccess: (data) => {
+      setAuthToken(data.accessToken);
     },
   });
 

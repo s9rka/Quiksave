@@ -3,12 +3,15 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { Label } from "../ui/label";
 import { useAuthServices } from "@/hooks/useAuthServices";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const { loginMutation } = useAuthServices();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +22,7 @@ export default function LoginForm() {
         onSuccess: (data) => {
           console.log("Access Token:", data.accessToken);
           localStorage.setItem("accessToken", data.accessToken);
-          // Redirect to home
+          navigate(`/${username}`);
         },
         onError: (error) => {
           console.error("Login failed:", error.message);
@@ -33,7 +36,9 @@ export default function LoginForm() {
       <h2 className="text-2xl font-bold mb-4">Login</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         {loginMutation.isError && (
-          <p className="text-red-500 text-sm">{(loginMutation.error as Error).message}</p>
+          <p className="text-red-500 text-sm">
+            {(loginMutation.error as Error).message}
+          </p>
         )}
         <div>
           <Label htmlFor="username" className="block text-sm font-medium mb-2">
@@ -61,7 +66,11 @@ export default function LoginForm() {
             required
           />
         </div>
-        <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={loginMutation.isPending}
+        >
           {loginMutation.isPending ? "Logging in..." : "Login"}
         </Button>
       </form>
