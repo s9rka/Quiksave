@@ -1,21 +1,14 @@
-import axios from "axios";
-import { getDefaultStore } from "jotai/vanilla";
-import { authTokenAtom } from "@/store/token";
+import { Note } from "@/lib/models";
+import {privateClient} from "./apiClient";
 
-const apiClient = axios.create({
-  baseURL: "http://localhost:8000",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  withCredentials: true,
-});
+export const getNoteIds = async () => {
+  const response = (await privateClient.get<Note[]>("/get-notes")).data.map(
+    (note) => note.id
+  );
 
-apiClient.interceptors.request.use((config) => {
-  const token = getDefaultStore().get(authTokenAtom); // Access token from Jotai
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+  return response;
+};
 
-export default apiClient;
+export const getNotes = async () => {
+  return (await privateClient.get<Note[]>("/get-notes")).data;
+};

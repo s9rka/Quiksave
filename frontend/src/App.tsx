@@ -1,24 +1,22 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./App.css";
-import LoginForm from "./components/auth/Login";
-import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import Register from "./components/auth/Register";
-import Dashboard from "./components/Dashboard";
+import AppRouter from "./routes/Router";
 
-const queryClient = new QueryClient();
-
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      
+      refetchOnMount: false,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <Routes>
-        <Route path="/" element={<LoginForm />} />
-        <Route path="/register" element={<Register/>} />
-
-        <Route path="/:username" element={<Dashboard/>} />
-        
-        
-      </Routes>
+      <AppRouter />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

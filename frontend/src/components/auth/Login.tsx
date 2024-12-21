@@ -4,12 +4,15 @@ import { useState } from "react";
 import { Label } from "../ui/label";
 import { useAuthServices } from "@/hooks/useAuthServices";
 import { useNavigate } from "react-router-dom";
+import { getDefaultStore } from "jotai/vanilla";
+import { authTokenAtom } from "@/store/auth";
 
 export default function LoginForm() {
   const { loginMutation } = useAuthServices();
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+
 
   const navigate = useNavigate();
 
@@ -21,7 +24,9 @@ export default function LoginForm() {
       {
         onSuccess: (data) => {
           console.log("Access Token:", data.accessToken);
-          localStorage.setItem("accessToken", data.accessToken);
+          console.log(localStorage.getItem("authToken"));
+          console.log("Atom Value:", getDefaultStore().get(authTokenAtom));
+
           navigate(`/${username}`);
         },
         onError: (error) => {
