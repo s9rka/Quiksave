@@ -12,3 +12,11 @@ export const getNoteIds = async () => {
 export const getNotes = async () => {
   return (await privateClient.get<Note[]>("/get-notes")).data;
 };
+
+export const createNote = async (data: Note) => {
+  await privateClient.post("/create-note", data)
+}
+
+export const deleteNote = async (id: number) => {
+  await privateClient.delete(`/note/${id}`)
+}

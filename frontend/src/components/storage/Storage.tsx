@@ -6,8 +6,7 @@ const Dashboard = () => {
 
   return (
     <div>
-      Welcome to the dashboard, {username}
-      <h1>My notes</h1>
+      <h1>{username}'s storage</h1>
       <Notes />
     </div>
   );
