@@ -42,7 +42,9 @@ func main() {
 
 	private.Use(middleware.AuthMiddleware)
 
-	corsRouter := middleware.CORSMiddleware(router)
+	handler := middleware.LogRequestMiddleware(
+		middleware.CORSMiddleware(router),
+	)
 
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
@@ -52,7 +54,7 @@ func main() {
 		Addr:         addr,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
-		Handler:      corsRouter,
+		Handler:      handler,
 	}
 
 	log.Printf("Server running on %s", addr)

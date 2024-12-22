@@ -11,10 +11,10 @@ type User struct {
 }
 
 type Note struct {
-	ID int `json:"id"`
-	UserID int `json:"userID"`
+	ID int
+	UserID int 
 	Title   string   `json:"title"`
 	Content string   `json:"content"`
 	Tags    []string `json:"tags"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time
 }
