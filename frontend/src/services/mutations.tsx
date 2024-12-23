@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createNote, deleteNote, login, register } from "./api";
-import { Note } from "@/lib/models";
+import { Note } from "@/lib/types";
 import { useSetAtom } from "jotai/react";
-import { authTokenAtom, usernameAtom } from "@/store/auth";
+import { authAtom } from "@/services/auth";
 import { useNavigate } from "react-router-dom";
 
 export const useCreateNote = () => {
@@ -50,16 +50,13 @@ export const useDeleteNote = () => {
 
 export const useLogin = () => {
   const navigate = useNavigate();
-  const setAuthToken = useSetAtom(authTokenAtom);
-  const setUsername = useSetAtom(usernameAtom);
+  const setAuthState = useSetAtom(authAtom);
   return useMutation({
     mutationFn: login,
     onSuccess: (data, variables) => {
-      setAuthToken(data);
-      setUsername(variables.username);
+      setAuthState({ token: data, username: variables.username });
       console.log("Login success, authToken: ", data);
       navigate(`/${variables.username}`);
-
     },
     onError: (error) => {
       console.error("Login failed:", error.message);
@@ -68,13 +65,11 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-  const setAuthToken = useSetAtom(authTokenAtom);
-  const setUsername = useSetAtom(usernameAtom);
+  const setAuthState = useSetAtom(authAtom);
   return useMutation({
     mutationFn: register,
     onSuccess: (data, variables) => {
-      setAuthToken(data);
-      setUsername(variables.username);
+      setAuthState({ token: data, username: variables.username });
       console.log("Register success, logging in..., authToken: ", data);
     },
     onError: (error) => {

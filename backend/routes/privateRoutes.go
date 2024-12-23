@@ -218,3 +218,56 @@ func RefreshJWT(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(`{"accessToken":"` + newJWT + `"}`))
 }
+
+func Logout(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPost {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    http.SetCookie(w, &http.Cookie{
+        Name:     "refresh_token",
+        Value:    "",
+        Expires:  time.Now().Add(-time.Hour),
+        Path:     "/",
+        HttpOnly: true,
+        Secure:   false, // Set this to true in production if using HTTPS
+        SameSite: http.SameSiteNoneMode,
+    })
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(`{"message":"Logged out successfully!"}`))
+}
+
+func GetMe(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodGet {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    // Extract userID from context
+    userID, err := auth.GetUserIDFromContext(r.Context())
+    if err != nil {
+        http.Error(w, "User ID not found", http.StatusUnauthorized)
+        return
+    }
+
+    // Fetch only the necessary user details (username, email)
+    user, err := database.GetUserByID(userID)
+    if err != nil {
+        if strings.Contains(err.Error(), "not found") {
+            http.Error(w, "User not found", http.StatusNotFound)
+        } else {
+            http.Error(w, "Failed to fetch user details", http.StatusInternalServerError)
+        }
+        return
+    }
+
+    // Respond with user details
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(user); err != nil {
+        http.Error(w, "Failed to encode user data", http.StatusInternalServerError)
+        return
+    }
+}

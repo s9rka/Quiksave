@@ -1,11 +1,10 @@
-import { Note } from "@/lib/models";
+import { Note } from "@/lib/types";
 import { useCreateNote } from "@/services/mutations";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { Input } from "../ui/input";
-import { useState } from "react";
 
 const CreateForm = () => {
-  const { register, handleSubmit, setValue } = useForm<Note>();
+  const { register, handleSubmit } = useForm<Note>();
   // const [tags, setTags] = useState<string[]>([])
 
   const createNoteMutation = useCreateNote();

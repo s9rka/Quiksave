@@ -38,6 +38,8 @@ func main() {
 	private.HandleFunc("/get-notes", routes.GetNotes)
 	private.HandleFunc("/note/{id:[0-9]+}", routes.GetNoteByID).Methods(http.MethodGet)
 	private.HandleFunc("/note/{id:[0-9]+}", routes.DeleteNote).Methods(http.MethodDelete)
+	private.HandleFunc("/logout", routes.Logout)
+	private.HandleFunc("/me", routes.GetMe)
 
 	private.HandleFunc("/refresh", routes.RefreshJWT)
 

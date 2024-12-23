@@ -2,24 +2,24 @@ import { Routes, Route } from "react-router-dom";
 import LoginForm from "../components/auth/Login";
 import Register from "../components/auth/Register";
 import Dashboard from "../components/storage/Storage";
-import {PrivateRoutes} from "./PrivateRoute";
-import {PublicRoutes} from "./PublicRoute";
+import { ProtectedRoute } from "./ProtectedRoute";
 import CreateForm from "@/components/createNote/CreateForm";
+import {PublicRoute} from "./PublicRoute";
 
 const AppRouter = () => {
   return (
     <Routes>
-      <Route element={<PublicRoutes />}>
+      <Route element={<PublicRoute />}>
         <Route path="/" element={<LoginForm />} />
         <Route path="/register" element={<Register />} />
       </Route>
 
-      <Route element={<PrivateRoutes />}>
+      <Route element={<ProtectedRoute />}>
         <Route path="/:username" element={<Dashboard />} />
-        <Route path="/new" element={<CreateForm/>} />
+        <Route path="/new" element={<CreateForm />} />
       </Route>
     </Routes>
   );
-}
+};
 
 export default AppRouter;

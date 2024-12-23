@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getToken } from "@/store/auth";
+import { getToken } from "@/services/auth";
 
 export const privateClient = axios.create({
   baseURL: "http://localhost:8000",

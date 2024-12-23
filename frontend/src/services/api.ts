@@ -1,6 +1,6 @@
-import { AuthResponse, Note } from "@/lib/models";
+import { AuthResponse, Note } from "@/lib/types";
 import { privateClient, publicClient } from "./apiClient";
-import { LoginCredentials, RegisterCredentials } from "@/lib/models";
+import { LoginCredentials, RegisterCredentials } from "@/lib/types";
 
 export const getNoteIds = async () => {
   const response = (await privateClient.get<Note[]>("/get-notes")).data.map(
@@ -35,4 +35,12 @@ export const register = async ({username, email, password}: RegisterCredentials)
     username, email, password
   });
   return response.data.accessToken;
+}
+
+export const logout = async () => {
+  return await privateClient.post("/logout")
+}
+
+export const getUser = async () => {
+  return (await privateClient.get("/me")).data
 }

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "../ui/label";
 import { useLogin } from "@/services/mutations";
-import { LoginCredentials } from "@/lib/models";
+import { LoginCredentials } from "@/lib/types";
 import { useForm, SubmitHandler } from "react-hook-form";
 
 export default function LoginForm() {

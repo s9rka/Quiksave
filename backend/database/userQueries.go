@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"fmt"
 	auth "notas/authentication"
@@ -100,4 +101,25 @@ func ValidateUserLogin(username, password string) (int, error) {
 	}
 
 	return id, nil
+}
+
+func GetUserByID(userID int) (*models.User, error) {
+    ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+    defer cancel()
+
+    query := "SELECT username, email FROM users WHERE id = $1"
+    var user models.User
+    err := dbPool.QueryRow(ctx, query, userID).Scan(&user.Username, &user.Email)
+    if err != nil {
+        if errors.Is(err, sql.ErrNoRows) {
+            return nil, fmt.Errorf("user not found")
+        }
+        return nil, fmt.Errorf("failed to query user: %v", err)
+    }
+
+    // Return only the necessary fields (Username, Email)
+    return &models.User{
+        Username: user.Username,
+        Email:    user.Email,
+    }, nil
 }
