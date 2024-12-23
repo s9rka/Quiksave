@@ -1,45 +1,22 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
 import { Label } from "../ui/label";
-import { useAuthServices } from "@/hooks/useAuthServices";
-import { useNavigate } from "react-router-dom";
-import { getDefaultStore } from "jotai/vanilla";
-import { authTokenAtom } from "@/store/auth";
+import { useLogin } from "@/services/mutations";
+import { LoginCredentials } from "@/lib/models";
+import { useForm, SubmitHandler } from "react-hook-form";
 
 export default function LoginForm() {
-  const { loginMutation } = useAuthServices();
+  const loginMutation = useLogin();
+  const { register, handleSubmit } = useForm<LoginCredentials>();
 
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-
-
-  const navigate = useNavigate();
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    loginMutation.mutate(
-      { username, password },
-      {
-        onSuccess: (data) => {
-          console.log("Access Token:", data.accessToken);
-          console.log(localStorage.getItem("authToken"));
-          console.log("Atom Value:", getDefaultStore().get(authTokenAtom));
-
-          navigate(`/${username}`);
-        },
-        onError: (error) => {
-          console.error("Login failed:", error.message);
-        },
-      }
-    );
+  const onSubmit: SubmitHandler<LoginCredentials> = (data) => {
+    loginMutation.mutate(data);
   };
 
   return (
     <div className="max-w-sm mx-auto mt-16 p-6 border rounded-lg shadow-sm text-left">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {loginMutation.isError && (
           <p className="text-red-500 text-sm">
             {(loginMutation.error as Error).message}
@@ -51,11 +28,9 @@ export default function LoginForm() {
           </Label>
           <Input
             id="username"
-            type="username"
+            type="text"
+            {...register("username", {required: true})}
             placeholder="Enter your username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
           />
         </div>
         <div>
@@ -65,10 +40,8 @@ export default function LoginForm() {
           <Input
             id="password"
             type="password"
+            {...register("password", {required: true})}
             placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
           />
         </div>
         <Button

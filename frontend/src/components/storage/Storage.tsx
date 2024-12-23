@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { Notes } from "./Notes";
+import { Notes } from "./MyNotes";
 
 const Dashboard = () => {
   const { username } = useParams();

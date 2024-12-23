@@ -21,7 +21,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	err = database.InitDb() 
+	err = database.InitDb()
 	if err != nil {
 		log.Fatalf("Database initialization failed: %v", err)
 	}
@@ -36,7 +36,8 @@ func main() {
 	private := router.PathPrefix("/").Subrouter()
 	private.HandleFunc("/create-note", routes.CreateNote)
 	private.HandleFunc("/get-notes", routes.GetNotes)
-	private.HandleFunc("/note/{id:[0-9]+}", routes.GetNoteByID)
+	private.HandleFunc("/note/{id:[0-9]+}", routes.GetNoteByID).Methods(http.MethodGet)
+	private.HandleFunc("/note/{id:[0-9]+}", routes.DeleteNote).Methods(http.MethodDelete)
 
 	private.HandleFunc("/refresh", routes.RefreshJWT)
 

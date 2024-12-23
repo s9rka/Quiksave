@@ -58,7 +58,8 @@ func GetNotesFromDB(userID int) ([]models.Note, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
 	defer cancel()
 
-	getNotesQuery := `SELECT n.id, n.title, n.content, n.created_at, COALESCE(ARRAY_AGG(t.name), '{}') AS tags FROM notes n
+	getNotesQuery := `SELECT n.id, n.title, n.content, n.created_at, COALESCE(ARRAY_AGG(COALESCE(t.name, '')), '{}') AS tags 
+                        FROM notes n
 						LEFT JOIN note_tags nt ON n.id = nt.note_id
 						LEFT JOIN tags t ON nt.tag_id = t.id
 						WHERE n.user_id = $1
@@ -79,6 +80,10 @@ func GetNotesFromDB(userID int) ([]models.Note, error) {
 		err := rows.Scan(&note.ID, &note.Title, &note.Content, &note.CreatedAt, &tags)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan note: %w", err)
+		}
+
+		if tags == nil {
+			tags = []string{}
 		}
 
 		note.Tags = tags
@@ -116,4 +121,26 @@ func GetNoteByIDFromDB(noteID, userID int) (*models.Note, error) {
 	note.Tags = tags
 	note.UserID = userID
 	return &note, nil
+}
+
+func DeleteNoteFromDB(noteID, userID int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3)
+	defer cancel()
+
+	query := `
+        DELETE FROM notes
+        WHERE id = $1 AND user_id = $2
+        RETURNING id
+    `
+
+	var deletedNoteID int
+	err := dbPool.QueryRow(ctx, query, noteID, userID).Scan(&deletedNoteID)
+	if err != nil {
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return fmt.Errorf("note with ID %d not found", noteID)
+		}
+		return fmt.Errorf("failed to delete note with ID %d: %w", noteID, err)
+	}
+
+	return nil
 }

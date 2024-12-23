@@ -4,6 +4,7 @@ import Register from "../components/auth/Register";
 import Dashboard from "../components/storage/Storage";
 import {PrivateRoutes} from "./PrivateRoute";
 import {PublicRoutes} from "./PublicRoute";
+import CreateForm from "@/components/createNote/CreateForm";
 
 const AppRouter = () => {
   return (
@@ -15,6 +16,7 @@ const AppRouter = () => {
 
       <Route element={<PrivateRoutes />}>
         <Route path="/:username" element={<Dashboard />} />
+        <Route path="/new" element={<CreateForm/>} />
       </Route>
     </Routes>
   );

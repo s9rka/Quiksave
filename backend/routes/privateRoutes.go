@@ -120,6 +120,45 @@ func GetNoteByID(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func DeleteNote(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodDelete {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    userID, err := auth.GetUserIDFromContext(r.Context())
+    if err != nil {
+        http.Error(w, "User ID not found", http.StatusUnauthorized)
+        return
+    }
+
+    vars := mux.Vars(r)
+    noteIDStr := vars["id"]
+    if noteIDStr == "" {
+        http.Error(w, "Missing note ID", http.StatusBadRequest)
+        return
+    }
+
+    noteID, err := strconv.Atoi(noteIDStr)
+    if err != nil {
+        http.Error(w, "Invalid note ID format", http.StatusBadRequest)
+        return
+    }
+
+    err = database.DeleteNoteFromDB(noteID, userID)
+    if err != nil {
+        if strings.Contains(err.Error(), "not found") {
+            http.Error(w, "Note not found", http.StatusNotFound)
+        } else {
+            http.Error(w, "Failed to delete note", http.StatusInternalServerError)
+        }
+        return
+    }
+
+    w.WriteHeader(http.StatusNoContent) // 204 No Content
+}
+
+
 // Checks if there's avalid refresh token in cookie
 // Gathers the userID from the refresh token
 // Generates new JWT token with userID
