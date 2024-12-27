@@ -27,7 +27,7 @@ export const login = async ({ username, password }: LoginCredentials) => {
     username,
     password,
   });
-  return response.data.accessToken;
+  return response.status;
 };
 
 export const register = async ({username, email, password}: RegisterCredentials) => {
@@ -42,5 +42,5 @@ export const logout = async () => {
 }
 
 export const getUser = async () => {
-  return (await privateClient.get("/me")).data
+  return await privateClient.get("/me")
 }

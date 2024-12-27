@@ -1,10 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./App.css";
 import AppRouter from "./routes/Router";
-import NavDrawer from "./components/layout/NavDrawer";
-import { isAuthenticatedAtom } from "./services/auth";
-import { useAtom } from "jotai";
+import { useInitializeAuth } from "./context/UserContext";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -18,12 +15,16 @@ export const queryClient = new QueryClient({
 });
 
 function App() {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  
+  const loading = useInitializeAuth();
 
+  // Show a spinner or loading state until done
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     <QueryClientProvider client={queryClient}>
-      <AppRouter />
-      {isAuthenticated && <NavDrawer />}
+        <AppRouter />
     </QueryClientProvider>
   );
 }

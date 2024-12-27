@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Notes } from "./MyNotes";
 
-const Dashboard = () => {
+const Storage = () => {
   const { username } = useParams();
 
   return (
@@ -12,4 +12,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard;
+export default Storage;

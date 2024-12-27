@@ -1,12 +1,19 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createNote, deleteNote, login, register } from "./api";
+import {
+  createNote,
+  deleteNote,
+  getUser,
+  login,
+  logout,
+  register,
+} from "./api";
 import { Note } from "@/lib/types";
-import { useSetAtom } from "jotai/react";
-import { authAtom } from "@/services/auth";
+
 import { useNavigate } from "react-router-dom";
+import { userAtom } from "@/context/UserContext";
+import { useSetAtom } from "jotai";
 
 export const useCreateNote = () => {
-  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (data: Note) => createNote(data),
     onMutate: () => {
@@ -23,8 +30,6 @@ export const useCreateNote = () => {
       console.log("settled");
       if (error) {
         console.log(error);
-      } else {
-        await queryClient.invalidateQueries({ queryKey: ["notes"] });
       }
     },
   });
@@ -49,14 +54,16 @@ export const useDeleteNote = () => {
 };
 
 export const useLogin = () => {
-  const navigate = useNavigate();
-  const setAuthState = useSetAtom(authAtom);
+  const setUser = useSetAtom(userAtom)
   return useMutation({
     mutationFn: login,
-    onSuccess: (data, variables) => {
-      setAuthState({ token: data, username: variables.username });
-      console.log("Login success, authToken: ", data);
-      navigate(`/${variables.username}`);
+    onSuccess: async () => {
+      console.log("Login success!");
+      const response = await getUser();
+      if (response?.data) {
+        setUser(response.data);
+      }
+
     },
     onError: (error) => {
       console.error("Login failed:", error.message);
@@ -65,15 +72,30 @@ export const useLogin = () => {
 };
 
 export const useRegister = () => {
-  const setAuthState = useSetAtom(authAtom);
   return useMutation({
     mutationFn: register,
-    onSuccess: (data, variables) => {
-      setAuthState({ token: data, username: variables.username });
-      console.log("Register success, logging in..., authToken: ", data);
+    onSuccess: () => {
+      console.log("Register success, logging in...");
     },
     onError: (error) => {
       console.error("Registering failed:", error.message);
+    },
+  });
+};
+
+export const useLogout = () => {
+  const navigate = useNavigate();
+  const setUser = useSetAtom(userAtom);
+
+  return useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      console.log("User logged out successfully");
+      setUser(null);
+      navigate("/");
+    },
+    onError: (error) => {
+      console.log("User logout error, ", error);
     },
   });
 };

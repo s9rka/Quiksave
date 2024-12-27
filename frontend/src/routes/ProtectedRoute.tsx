@@ -1,13 +1,17 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAtom } from "jotai";
-import { isAuthenticatedAtom } from "@/services/auth";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/context/UserContext";
 
-export const ProtectedRoute = () => {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+const ProtectedRoute = () => {
+  const user = useAtomValue(userAtom);
 
-  if (!isAuthenticated) {
+  console.log("ProtectedRoute, user", user?.username);
+
+  if (!user) {
     return <Navigate to="/" replace />;
   }
 
   return <Outlet />;
 };
+
+export default ProtectedRoute;

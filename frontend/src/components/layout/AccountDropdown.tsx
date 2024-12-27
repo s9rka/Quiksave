@@ -4,27 +4,16 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
-import { useAtom } from "jotai";
-import { authAtom } from "@/services/auth";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useLogout } from "@/services/mutations";
 
 const AccountDropdown = () => {
-  const [authState, setAuthState] = useAtom(authAtom);
   const navigate = useNavigate();
+  const logoutMutation = useLogout()
 
-  useEffect(() => {
-    if (!authState.token) {
-      navigate("/");
-    }
-  }, [authState.token, navigate]);
-
-  const logout = () => {
-    setAuthState({ token: null, username: null });
-    navigate("/");
+  const handleLogout = async () => {
+    logoutMutation.mutate()
   };
-
-  if (!authState.token) return null;
 
   return (
     <div>
@@ -34,7 +23,7 @@ const AccountDropdown = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent>
           <div className="p-4 flex flex-col gap-2">
-            <Button onClick={logout}>Logout</Button>
+            <Button onClick={handleLogout}>Logout</Button>
             <Button variant="outline" onClick={() => navigate("/settings")}>
               Settings
             </Button>

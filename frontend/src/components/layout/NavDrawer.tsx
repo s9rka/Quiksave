@@ -3,16 +3,19 @@ import { Button } from "../ui/button";
 import { ChevronsUpDown } from "lucide-react";
 import AccountDropdown from "./AccountDropdown";
 import { useNavigate } from "react-router-dom";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/context/UserContext";
 
 const NavDrawer = () => {
   const navigate = useNavigate()
+  const user = useAtomValue(userAtom)
 
   const handleNew = () => {
     navigate("/new")
   }
 
   const handleStorage = () => {
-    navigate("/")
+    navigate(`${user?.username}`)
   }
   return (
     <Drawer>

@@ -29,10 +29,11 @@ func CreateNote(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := auth.GetUserIDFromContext(r.Context())
-	if err != nil {
-		http.Error(w, "User ID not found", http.StatusUnauthorized)
-	}
+	userID, ok := r.Context().Value("userID").(int)
+    if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
 
 	note.UserID = userID
 
@@ -61,10 +62,11 @@ func GetNotes(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := auth.GetUserIDFromContext(r.Context())
-	if err != nil {
-		http.Error(w, "User ID not found", http.StatusUnauthorized)
-	}
+	userID, ok := r.Context().Value("userID").(int)
+    if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
 
 	notes, err := database.GetNotesFromDB(userID)
 	if err != nil {
@@ -85,10 +87,11 @@ func GetNoteByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userID, err := auth.GetUserIDFromContext(r.Context())
-	if err != nil {
-		http.Error(w, "User ID not found", http.StatusUnauthorized)
-	}
+	userID, ok := r.Context().Value("userID").(int)
+    if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
 
 	vars := mux.Vars(r)
 	noteIDStr := vars["id"]
@@ -126,9 +129,9 @@ func DeleteNote(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    userID, err := auth.GetUserIDFromContext(r.Context())
-    if err != nil {
-        http.Error(w, "User ID not found", http.StatusUnauthorized)
+    userID, ok := r.Context().Value("userID").(int)
+    if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
         return
     }
 
@@ -231,7 +234,17 @@ func Logout(w http.ResponseWriter, r *http.Request) {
         Expires:  time.Now().Add(-time.Hour),
         Path:     "/",
         HttpOnly: true,
-        Secure:   false, // Set this to true in production if using HTTPS
+        Secure:   false,
+        SameSite: http.SameSiteNoneMode,
+    })
+
+	http.SetCookie(w, &http.Cookie{
+        Name:     "access_token",
+        Value:    "",
+        Expires:  time.Now().Add(-time.Hour),
+        Path:     "/",
+        HttpOnly: true,
+        Secure:   false,
         SameSite: http.SameSiteNoneMode,
     })
 
@@ -246,10 +259,9 @@ func GetMe(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Extract userID from context
-    userID, err := auth.GetUserIDFromContext(r.Context())
-    if err != nil {
-        http.Error(w, "User ID not found", http.StatusUnauthorized)
+    userID, ok := r.Context().Value("userID").(int)
+    if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
         return
     }
 

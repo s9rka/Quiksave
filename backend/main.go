@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net/http"
@@ -26,13 +27,14 @@ func main() {
 		log.Fatalf("Database initialization failed: %v", err)
 	}
 
+	secretKey := []byte(os.Getenv("SECRET_KEY"))
+
 	router := mux.NewRouter()
-	// Public
+
 	router.HandleFunc("/", routes.HomeHandler)
 	router.HandleFunc("/register", routes.RegisterHandler)
 	router.HandleFunc("/login", routes.LoginHandler)
 
-	// Private
 	private := router.PathPrefix("/").Subrouter()
 	private.HandleFunc("/create-note", routes.CreateNote)
 	private.HandleFunc("/get-notes", routes.GetNotes)
@@ -40,14 +42,24 @@ func main() {
 	private.HandleFunc("/note/{id:[0-9]+}", routes.DeleteNote).Methods(http.MethodDelete)
 	private.HandleFunc("/logout", routes.Logout)
 	private.HandleFunc("/me", routes.GetMe)
-
 	private.HandleFunc("/refresh", routes.RefreshJWT)
 
-	private.Use(middleware.AuthMiddleware)
+	private.Use(middleware.CreateAuthMiddleware(secretKey))
 
 	handler := middleware.LogRequestMiddleware(
 		middleware.CORSMiddleware(router),
 	)
+
+	// Load your certificate and key files
+    certFile := "../localhost+1.pem"
+    keyFile := "../localhost+1-key.pem"
+
+    // Configure TLS if you want advanced settings (optional)
+    tlsConfig := &tls.Config{
+        MinVersion: tls.VersionTLS12,
+		
+        // Customize other TLS settings if needed
+    }
 
 	host := os.Getenv("HOST")
 	port := os.Getenv("PORT")
@@ -55,13 +67,16 @@ func main() {
 
 	srv := &http.Server{
 		Addr:         addr,
+		TLSConfig: tlsConfig,
 		WriteTimeout: time.Second * 15,
 		ReadTimeout:  time.Second * 15,
 		Handler:      handler,
 	}
 
-	log.Printf("Server running on %s", addr)
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("Server failed to start: %v", err)
-	}
+	log.Printf("Starting HTTPS server on https://localhost:8443")
+    // ListenAndServeTLS will load the certificates for HTTPS
+    err = srv.ListenAndServeTLS(certFile, keyFile)
+    if err != nil {
+        log.Fatalf("Failed to start HTTPS server: %v", err)
+    }
 }

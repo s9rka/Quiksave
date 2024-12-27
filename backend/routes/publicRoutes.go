@@ -9,6 +9,7 @@ import (
 	auth "notas/authentication"
 	"notas/database"
 	"notas/models"
+	"os"
 	"time"
 )
 
@@ -76,54 +77,55 @@ type LoginResponse struct {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return
-	}
+    if r.Method != http.MethodPost {
+        w.WriteHeader(http.StatusMethodNotAllowed)
+        return
+    }
 
-	var loginRequest LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+    var loginRequest LoginRequest
+    if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	userID, err := database.ValidateUserLogin(loginRequest.Username, loginRequest.Password)
-	if err != nil {
-		http.Error(w, "Wrong username or password", http.StatusUnauthorized)
-		return
-	}
+    userID, err := database.ValidateUserLogin(loginRequest.Username, loginRequest.Password)
+    if err != nil {
+        http.Error(w, "Wrong username or password", http.StatusUnauthorized)
+        return
+    }
 
-	accessToken, err := auth.GenerateJWT(userID)
-	if err != nil {
-		http.Error(w, "Failed to generate access token", http.StatusInternalServerError)
-		return
-	}
+    secretKey := os.Getenv("SECRET_KEY")
 
-	refreshToken, err := auth.GenerateRefreshToken(userID)
-	if err != nil {
-		http.Error(w, "Failed to generate refresh token", http.StatusInternalServerError)
-		return
-	}
+    // Refresh token
+    refreshTokenValue := fmt.Sprintf("userID:%d|type:refresh", userID)
+    refreshCookie := auth.CreateCookie("refresh_token", refreshTokenValue, "/", 7*24*time.Hour)
+    if err := auth.WriteEncrypted(w, refreshCookie, []byte(secretKey)); err != nil {
+        log.Printf("Failed to set encrypted refresh token cookie: %v", err)
+        http.Error(w, "Failed to set encrypted refresh token cookie", http.StatusInternalServerError)
+        return
+    }
 
-	http.SetCookie(w, &http.Cookie{
-		Name:     "refresh_token",
-		Value:    refreshToken,
-		Expires:  time.Now().Add(7 * 24 * time.Hour),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   false,
-		SameSite: http.SameSiteNoneMode,
-	})
+    // Access token
+    accessTokenValue := fmt.Sprintf("userID:%d|type:access", userID)
+    accessCookie := auth.CreateCookie("access_token", accessTokenValue, "/", 15*time.Minute)
+    if err := auth.WriteEncrypted(w, accessCookie, []byte(secretKey)); err != nil {
+        log.Printf("Failed to set encrypted access token cookie: %v", err)
+        http.Error(w, "Failed to set encrypted access token cookie", http.StatusInternalServerError)
+        return
+    }
 
-	response := LoginResponse{
-		Message:     "Login successful!",
-		AccessToken: accessToken,
-	}
+    // Log for debugging
+    log.Printf("Access Token Cookie: %s\nRefresh Token Cookie: %s", accessCookie.Value, refreshCookie.Value)
 
-	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(response); err != nil {
-		log.Printf("Failed to encode response: %v", err)
-		http.Error(w, fmt.Sprintf("Failed to encode response: %v", err), http.StatusInternalServerError)
-		return
-	}
+    // Response
+    response := LoginResponse{
+        Message: "Login successful!",
+    }
+    w.Header().Set("Content-Type", "application/json")
+    if err := json.NewEncoder(w).Encode(response); err != nil {
+        log.Printf("Failed to encode response: %v", err)
+        http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+        return
+    }
 }
+

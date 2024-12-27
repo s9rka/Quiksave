@@ -1,13 +1,14 @@
 import { Navigate, Outlet } from "react-router-dom";
-import { useAtom } from "jotai";
-import { isAuthenticatedAtom } from "@/services/auth";
+import { useAtomValue } from "jotai";
+import { userAtom } from "@/context/UserContext";
 
 export const PublicRoute = () => {
-  const [isAuthenticated] = useAtom(isAuthenticatedAtom);
+  const user = useAtomValue(userAtom);
+  console.log("PublicRoute, user", user?.username);
 
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
+  if (user) {
+    return <Navigate to={`/${user.username}`} replace />;
+  } else {
+    return <Outlet />;
   }
-
-  return <Outlet />;
 };
