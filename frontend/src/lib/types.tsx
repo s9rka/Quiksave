@@ -1,9 +1,13 @@
-export interface Note {
-  id: number;
-  title: string;
+export interface CreateNote {
+  heading: string;
   content: string;
-  created_at: string;
   tags: string[];
+}
+
+export interface Note extends CreateNote {
+  id: number;               
+  created_at: string;
+  last_edit: string;
 }
 
 export interface LoginCredentials {
@@ -25,3 +29,5 @@ export interface User {
   id: number;
     username: string;
 }
+
+export type Tag = string;

@@ -6,12 +6,13 @@ import CreateForm from "@/components/createNote/CreateForm";
 import { PublicRoute } from "./PublicRoute";
 import ProtectedRoute from "./ProtectedRoute";
 import AppLayout from "@/components/layout/AppLayout";
+import { EditNotePage } from "@/components/createNote/EditNote";
+import Logout from "@/components/auth/Logout";
 
 const AppRouter = () => {
   return (
     <Routes>
       <Route element={<AppLayout />}>
-      
         {/* Public Routes */}
         <Route element={<PublicRoute />}>
           <Route path="/" element={<LoginForm />} />
@@ -22,6 +23,8 @@ const AppRouter = () => {
         <Route element={<ProtectedRoute />}>
           <Route path="/:username" element={<Dashboard />} />
           <Route path="/new" element={<CreateForm />} />
+          <Route path="/note/:id" element={<EditNotePage />} />
+          <Route path="/logout" element={<Logout/>} />
         </Route>
       </Route>
     </Routes>

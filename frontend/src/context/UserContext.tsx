@@ -1,7 +1,8 @@
-// src/state/userAtom.ts
-// src/hooks/useInitializeAuth.ts
+
 import { useState, useEffect } from "react";
 import { atom, useAtom } from "jotai";
+import { atomWithStorage } from 'jotai/utils'
+
 import { getUser } from "@/services/api";
 
 interface UserAtomProps {
@@ -9,8 +10,7 @@ interface UserAtomProps {
   email: string,
 
 }
-export const userAtom = atom<UserAtomProps | null>(null);
-
+export const userAtom = atomWithStorage<UserAtomProps | null>("userAtom", null);
 
 export function useInitializeAuth() {
   const [user, setUser] = useAtom(userAtom);
@@ -19,7 +19,7 @@ export function useInitializeAuth() {
   useEffect(() => {
     const verifyUser = async () => {
       try {
-        const response = await getUser(); // e.g. GET /api/me
+        const response = await getUser();
         if (response?.data) {
           console.log("User authenticated:", response.data);
           setUser(response.data);

@@ -7,9 +7,6 @@ export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 1000 * 60 * 5,
-
-      refetchOnMount: false,
-      refetchOnWindowFocus: false,
     },
   },
 });
@@ -18,7 +15,6 @@ function App() {
   
   const loading = useInitializeAuth();
 
-  // Show a spinner or loading state until done
   if (loading) {
     return <div>Loading...</div>;
   }

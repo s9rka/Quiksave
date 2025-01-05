@@ -283,3 +283,89 @@ func GetMe(w http.ResponseWriter, r *http.Request) {
         return
     }
 }
+
+func EditNote(w http.ResponseWriter, r *http.Request) {
+    if r.Method != http.MethodPut {
+        http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+        return
+    }
+
+    userID, ok := r.Context().Value("userID").(int)
+    if !ok {
+        http.Error(w, "Unauthorized", http.StatusUnauthorized)
+        return
+    }
+
+    vars := mux.Vars(r)
+    noteIDStr := vars["id"]
+    if noteIDStr == "" {
+        http.Error(w, "Missing note ID", http.StatusBadRequest)
+        return
+    }
+
+    noteID, err := strconv.Atoi(noteIDStr)
+    if err != nil {
+        http.Error(w, "Invalid note ID format", http.StatusBadRequest)
+        return
+    }
+
+    var noteData models.Note
+    if err := json.NewDecoder(r.Body).Decode(&noteData); err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    // Update the note
+    err = database.UpdateNoteInDB(noteID, userID, noteData)
+    if err != nil {
+        if strings.Contains(err.Error(), "not found") {
+            http.Error(w, "Note not found", http.StatusNotFound)
+        } else {
+            http.Error(w, err.Error(), http.StatusInternalServerError)
+        }
+        return
+    }
+
+    // Fetch the updated note (including last_edit)
+    updatedNote, err := database.GetNoteByIDFromDB(noteID, userID)
+    if err != nil {
+        http.Error(w, fmt.Sprintf("Failed to retrieve updated note: %v", err), http.StatusInternalServerError)
+        return
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    _ = json.NewEncoder(w).Encode(updatedNote)
+}
+
+
+func GetUserTags(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract userID from the context
+	userID, ok := r.Context().Value("userID").(int)
+	if !ok {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	// Fetch tags for the user
+	tags, err := database.GetNoteTags(userID)
+	if err != nil {
+		if strings.Contains(err.Error(), "not found") {
+			http.Error(w, "Tags not found", http.StatusNotFound)
+		} else {
+			http.Error(w, "Failed to fetch tags", http.StatusInternalServerError)
+		}
+		return
+	}
+
+	// Respond with tags as JSON
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(tags); err != nil {
+		http.Error(w, "Failed to encode tags data", http.StatusInternalServerError)
+		return
+	}
+}

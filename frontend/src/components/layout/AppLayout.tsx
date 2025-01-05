@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { userAtom } from "@/context/UserContext";
-import NavDrawer from "./NavDrawer";
 import { useAtomValue } from "jotai";
+import BottomNav from "./BottomNav";
 
 const AppLayout = () => {
 
@@ -10,11 +10,10 @@ const AppLayout = () => {
   return (
     <div>
       <header>
-        <h1>My App</h1>
       </header>
-      <main>
+      <main className="w-full max-w-none px-2 sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
         <Outlet />
-        {user && <NavDrawer />}
+        {user && <BottomNav />}
       </main>
     </div>
   );

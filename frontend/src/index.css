@@ -1,9 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Work+Sans:ital,wght@0,100..900;1,100..900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 1% 97%;
     --foreground: 20 14.3% 4.1%;
     --card: 0 0% 100%;
     --card-foreground: 20 14.3% 4.1%;
@@ -61,9 +63,21 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
   #root {
     @apply min-h-screen;
+  }
+
+  h1 {
+    @apply text-4xl font-medium
+  }
+
+  h2 {
+    @apply text-xl font-medium
+  }
+
+  h3 {
+    @apply text-lg font-medium text-stone-600
   }
 }

@@ -1,21 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateNote, Note } from "@/lib/types";
+import { useNavigate } from "react-router-dom";
+import { userAtom } from "@/context/UserContext";
+import { useSetAtom } from "jotai";
 import {
   createNote,
+  editNote,
   deleteNote,
   getUser,
   login,
   logout,
   register,
 } from "./api";
-import { Note } from "@/lib/types";
-
-import { useNavigate } from "react-router-dom";
-import { userAtom } from "@/context/UserContext";
-import { useSetAtom } from "jotai";
 
 export const useCreateNote = () => {
+  const queryClient = useQueryClient();
+
   return useMutation({
-    mutationFn: (data: Note) => createNote(data),
+    mutationFn: (data: CreateNote) => createNote(data),
     onMutate: () => {
       console.log("mutate");
     },
@@ -25,9 +27,37 @@ export const useCreateNote = () => {
 
     onSuccess: () => {
       console.log("success");
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
     },
     onSettled: async (_, error) => {
       console.log("settled");
+      if (error) {
+        console.log(error);
+      }
+    },
+  });
+};
+
+export const useUpdateNote = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: Note) => {
+      const response = await editNote(data);
+      return response;
+    },
+    onMutate: () => {
+      console.log("update mutate");
+    },
+    onError: () => {
+      console.log("update error");
+    },
+    onSuccess: () => {
+      console.log("update success");
+      queryClient.invalidateQueries({ queryKey: ["notes"] });
+    },
+    onSettled: async (_, error) => {
+      console.log("update settled");
       if (error) {
         console.log(error);
       }
@@ -54,7 +84,7 @@ export const useDeleteNote = () => {
 };
 
 export const useLogin = () => {
-  const setUser = useSetAtom(userAtom)
+  const setUser = useSetAtom(userAtom);
   return useMutation({
     mutationFn: login,
     onSuccess: async () => {
@@ -63,7 +93,6 @@ export const useLogin = () => {
       if (response?.data) {
         setUser(response.data);
       }
-
     },
     onError: (error) => {
       console.error("Login failed:", error.message);

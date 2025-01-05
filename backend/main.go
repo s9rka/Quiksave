@@ -40,6 +40,8 @@ func main() {
 	private.HandleFunc("/get-notes", routes.GetNotes)
 	private.HandleFunc("/note/{id:[0-9]+}", routes.GetNoteByID).Methods(http.MethodGet)
 	private.HandleFunc("/note/{id:[0-9]+}", routes.DeleteNote).Methods(http.MethodDelete)
+	private.HandleFunc("/note/{id:[0-9]+}", routes.EditNote).Methods(http.MethodPut)
+	private.HandleFunc("/tags", routes.GetUserTags)
 	private.HandleFunc("/logout", routes.Logout)
 	private.HandleFunc("/me", routes.GetMe)
 	private.HandleFunc("/refresh", routes.RefreshJWT)
@@ -51,8 +53,8 @@ func main() {
 	)
 
 	// Load your certificate and key files
-    certFile := "../localhost+1.pem"
-    keyFile := "../localhost+1-key.pem"
+    certFile := "../localhost+2.pem"
+    keyFile := "../localhost+2-key.pem"
 
     // Configure TLS if you want advanced settings (optional)
     tlsConfig := &tls.Config{
