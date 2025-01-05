@@ -14,7 +14,7 @@ export const NoteCard = ({ note, openNote, handleDeleteNote }:NoteCardProps) => 
   const validTags = filterValidTags(note.tags);
 
   return (
-    <Card className="relative p-2 mb-2">
+    <Card className="relative p-2 mb-2 bg-white/50">
       <div className="px-2" onClick={() => openNote(note.id)}>
         <h3 className="my-1">{note.heading}</h3>
         <p
@@ -27,7 +27,7 @@ export const NoteCard = ({ note, openNote, handleDeleteNote }:NoteCardProps) => 
       <div className="flex gap-2 items-center justify-start mt-2">
         {validTags.length > 0 && (
           validTags.map((tag) => (
-            <Badge key={tag} variant="outline">
+            <Badge key={tag} variant="secondary">
               #{tag.trim()}
             </Badge>
           ))

@@ -3,8 +3,9 @@ import { useNotes, useTags } from "@/services/queries";
 import { useNavigate } from "react-router-dom";
 import { NoNotesPlaceholder } from "@/components/storage/NoNotes";
 import { NoteCard } from "@/components/storage/NoteCard";
-import { Tag } from "@/lib/types";
+import { TagsDropdown } from "@/components/storage/TagsDropdown";
 import { useState } from "react";
+import { SearchBar } from "./SearchBar";
 
 export const Notes = () => {
   const notesQuery = useNotes();
@@ -13,7 +14,7 @@ export const Notes = () => {
   const navigate = useNavigate();
 
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
-
+  const [searchQuery, setSearchQuery] = useState("");
 
   const openNote = (id: number) => navigate(`/note/${id}`);
 
@@ -40,39 +41,37 @@ export const Notes = () => {
   const notes = notesQuery.data || [];
   const tags = tagsQuery.data || [];
 
-  const filteredNotes = selectedTag
-    ? notes.filter((note) => note.tags.includes(selectedTag))
-    : notes;
-
+  const filteredNotes = notes
+    .filter((note) => (selectedTag ? note.tags.includes(selectedTag) : true))
+    .filter((note) =>
+      note.content.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   return (
-    
-      <div>
-      {tags.map((tag: Tag) => (
-          <button
-            key={tag}
-            className={`tag ${selectedTag === tag ? "bg-slate-400" : ""}`}
-            onClick={() => setSelectedTag(tag)}
-          >
-            {tag}
-          </button>
-        ))}
-      
-      <ul>
-      {filteredNotes.length === 0 ? (
-        <NoNotesPlaceholder />
-      ) : (
-        filteredNotes.map((note) => (
-          <li key={note.id}>
-            <NoteCard
-              note={note}
-              openNote={openNote}
-              handleDeleteNote={handleDeleteNote}
-            />
-          </li>
-        ))
-      )}
-    </ul>
+    <div>
+      <div className="flex items-center justify-between pt-8">
+        <TagsDropdown
+          tags={tags}
+          selectedTag={selectedTag}
+          setSelectedTag={setSelectedTag}
+        />
+        <SearchBar onSearch={setSearchQuery} />
+      </div>
+      <ul className="py-4">
+        {filteredNotes.length === 0 ? (
+          <NoNotesPlaceholder />
+        ) : (
+          filteredNotes.map((note) => (
+            <li key={note.id}>
+              <NoteCard
+                note={note}
+                openNote={openNote}
+                handleDeleteNote={handleDeleteNote}
+              />
+            </li>
+          ))
+        )}
+      </ul>
     </div>
   );
 };

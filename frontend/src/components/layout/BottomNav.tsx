@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Plus, Library } from "lucide-react";
+import { Plus, Library, User } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -8,30 +8,25 @@ import {
 } from "@/components/ui/tooltip";
 
 const navItems = [
-  { icon: Library, label: "Storage", href: `/` },
+  { icon: Library, label: "Storage", href: "/" },
+  { icon: User, label: "Account", href: "/account" },
   { icon: Plus, label: "Create Note", href: "/new" },
 ];
 
-export default function EnhancedBottomNav() {
+export default function BottomNav() {
   return (
-    <nav className="fixed bottom-2 left-1/2 transform -translate-x-1/2 z-50 bg-white/80">
-      <ul className="flex justify-around gap-1 w-auto sm:max-w-sm items-center py-2 px-6">
+    <nav className="sticky w-full bottom-2 left-2 right-2 bg-[#EAEFF3]/50 p-4 backdrop-blur-sm">
+      <ul className="flex justify-around items-center w-full">
         {navItems.map((item) => (
-          <li key={item.href} className="relative group">
+          <li key={item.href}>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>
                   <NavLink
                     to={item.href}
-                    className={({ isActive }) =>
-                      `flex flex-col items-center p-3 transition-all duration-300 border rounded ${
-                        isActive
-                          ? "bg-gray-300 text-gray-900"
-                          : "text-gray-600 hover:text-gray-900"
-                      }`
-                    }
+                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D9EFBD] text-[#335F68] transition-colors hover:bg-[#D8F0C8]"
                   >
-                    <item.icon className="w-6 h-6 relative z-10" />
+                    <item.icon className="w-6 h-6" />
                   </NavLink>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -45,3 +40,4 @@ export default function EnhancedBottomNav() {
     </nav>
   );
 }
+

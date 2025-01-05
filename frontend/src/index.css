@@ -74,7 +74,7 @@
   }
 
   h2 {
-    @apply text-xl font-medium
+    @apply text-lg font-medium
   }
 
   h3 {

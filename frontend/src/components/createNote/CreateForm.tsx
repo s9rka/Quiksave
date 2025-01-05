@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { hasChanges } from "@/utils/utils";
 import { Label } from "../ui/label";
+import logo from "@/assets/logo.svg";
+
 
 type CreateFormProps = {
   initialNote?: Note;
@@ -23,33 +25,37 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
 
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [lastSaveTime, setLastSaveTime] = useState<number>(Date.now());
-  const [previousData, setPreviousData] = useState<Note | undefined>(initialNote);
+  const [previousData, setPreviousData] = useState<Note | undefined>(
+    initialNote
+  );
 
   const heading = watch("heading");
-  const content = watch("content") || ""; // Default to empty string if undefined
+  const content = watch("content") || "";
 
-  // Utility to extract tags when a regex pattern is detected
   const extractTags = (text: string): string[] => {
-    const tagRegex = /#\w+/g; // Matches words starting with `#`
-    if (!tagRegex.test(text)) return []; // Return an empty array if no match is found
+    const tagRegex = /#\w+/g;
+    if (!tagRegex.test(text)) return [];
     return Array.from(text.match(tagRegex) || []).map((tag) => tag.slice(1)); // Remove `#`
   };
 
   const isBlank = () => !heading?.trim() && !content.trim();
   const isEditMode = !!previousData?.id;
-  const [isSaved, setIsSaved] = useState(!isBlank() && previousData && !hasChanges(previousData, { heading, content }));
+  const [isSaved, setIsSaved] = useState(
+    !isBlank() &&
+      previousData &&
+      !hasChanges(previousData, { heading, content })
+  );
 
   useEffect(() => {
     if (isBlank()) return;
 
-    // Extract tags only when a regex pattern is detected
     const tags = extractTags(content);
     if (tags.length > 0) {
-      setValue("tags", tags); // Update tags in form state only if new tags are detected
+      setValue("tags", tags);
     }
 
     if (previousData && !hasChanges(previousData, { heading, content, tags })) {
-      return; // No changes, skip scheduling an autoSave
+      return;
     }
 
     if (debounceTimerRef.current) {
@@ -72,7 +78,7 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
   const autoSave = () => {
     if (isBlank()) return;
 
-    const tags = extractTags(content); // Extract tags for the save
+    const tags = extractTags(content);
     const currentData = {
       ...previousData,
       heading,
@@ -81,11 +87,11 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
     } as Partial<Note>;
 
     if (previousData && !hasChanges(previousData, currentData)) {
-      return; // No changes, skip saving
+      return;
     }
 
     if (isEditMode) {
-      console.log(previousData)
+      console.log(previousData);
       updateNoteMutation.mutate(currentData as Note, {
         onSuccess: () => {
           setPreviousData(currentData as Note);
@@ -112,28 +118,31 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-10">
-      <form className="flex flex-col space-y-4">
+    <div className="mx-auto max-w-md px-4 py-10 max-h-screen">
+      <div className="flex flex-row justify-between items-center">
+        <img className="h-6 mb-2" src={logo} />
+        <Label
+          className={`px-2 py-1 rounded text-sm   ${
+            isSaved ? "text-green-800" : " text-stone-800"
+          }`}
+        >
+          {isSaved ? "Saved" : "Not Saved"}
+        </Label>
+      </div>
+      <form className="flex flex-col space-y-4 ">
         <div className="flex justify-between items-center">
           <input
             type="text"
             placeholder="Heading"
             {...register("heading")}
-            className="focus:outline-none text-lg placeholder-gray-500"
+            className="bg-transparent focus:outline-none text-lg placeholder-gray-500"
           />
-          <Label
-            className={`px-2 py-1 rounded text-sm   ${
-              isSaved ? "text-green-800" : " text-stone-800"
-            }`}
-          >
-            {isSaved ? "Saved" : "Not Saved"}
-          </Label>
         </div>
         <textarea
           placeholder="Write here (use #tag to add tags)"
           {...register("content")}
-          rows={8}
-          className="w-full focus:outline-none resize-none text-base placeholder-gray-500"
+          rows={16}
+          className="w-full bg-transparent focus:outline-none resize-none text-base placeholder-gray-500"
         />
         <div className="flex flex-wrap space-x-2">
           {watch("tags")?.map((tag, index) => (
