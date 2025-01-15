@@ -28,6 +28,7 @@ export const useCreateNote = () => {
     onSuccess: () => {
       console.log("success");
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
     },
     onSettled: async (_, error) => {
       console.log("settled");
@@ -55,6 +56,7 @@ export const useUpdateNote = () => {
     onSuccess: () => {
       console.log("update success");
       queryClient.invalidateQueries({ queryKey: ["notes"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
     },
     onSettled: async (_, error) => {
       console.log("update settled");
@@ -78,6 +80,7 @@ export const useDeleteNote = () => {
         console.log(error);
       } else {
         await queryClient.invalidateQueries({ queryKey: ["notes"] });
+        queryClient.invalidateQueries({ queryKey: ["tags"] });
       }
     },
   });

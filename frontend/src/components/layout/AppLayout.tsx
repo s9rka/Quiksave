@@ -7,14 +7,12 @@ const AppLayout = () => {
   const user = useAtomValue(userAtom);
 
   return (
-    <>
-      <header>
-      </header>
-      <main className="relative w-full max-w-none sm:max-w-sm md:max-w-md lg:max-w-lg xl:max-w-xl mx-auto">
+    <div className="flex flex-col min-h-screen">
+      <main className="flex-1 w-full max-w-none sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl mx-auto px-4 pb-24">
         <Outlet />
-        {user && <BottomNav />}
       </main>
-    </>
+      {user && <BottomNav />}
+    </div>
   );
 };
 

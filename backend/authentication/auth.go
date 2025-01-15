@@ -7,14 +7,13 @@ import (
 	"strings"
 )
 
-// Errors for validation
 var (
 	ErrInvalidTokenFormat = errors.New("invalid token format")
 	ErrInvalidTokenType   = errors.New("invalid token type")
 )
 
 // ValidateAndExtractUserID validates a token and extracts the userID.
-// `tokenName` should be "access_token" or "refresh_token" to distinguish token types.
+// `tokenName` should be "access_token" or "refresh_token".
 func ValidateAndExtractUserID(r *http.Request, tokenName string, secretKey []byte, expectedType string) (int, error) {
 	// Read and decrypt the token
 	plaintext, err := ReadEncrypted(r, tokenName, secretKey)

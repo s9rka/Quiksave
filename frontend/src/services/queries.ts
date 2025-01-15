@@ -21,8 +21,8 @@ export const useNotes = () => {
 export const useNote = (id: number) => {
   return useQuery<Note, Error>({
     queryKey: ["notes", id],
-    queryFn: () => getNoteById(id), // Pass a function, not the result of a function call
-    enabled: !!id, // Ensure the query only runs if `id` is valid
+    queryFn: () => getNoteById(id),
+    enabled: !!id,
   });
 };
 

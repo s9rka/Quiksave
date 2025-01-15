@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { hasChanges } from "@/utils/utils";
 import { Label } from "../ui/label";
 import logo from "@/assets/logo.svg";
-
+import { Loader2 } from "lucide-react";
 
 type CreateFormProps = {
   initialNote?: Note;
@@ -40,23 +40,22 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
 
   const isBlank = () => !heading?.trim() && !content.trim();
   const isEditMode = !!previousData?.id;
-  const [isSaved, setIsSaved] = useState(
-    !isBlank() &&
-      previousData &&
-      !hasChanges(previousData, { heading, content })
-  );
+  const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   useEffect(() => {
-    if (isBlank()) return;
+    if (isBlank()) {
+      setHasUnsavedChanges(false);
+      return;
+    }
 
     const tags = extractTags(content);
     if (tags.length > 0) {
       setValue("tags", tags);
     }
 
-    if (previousData && !hasChanges(previousData, { heading, content, tags })) {
-      return;
-    }
+    const hasModified = !previousData || hasChanges(previousData, { heading, content, tags });
+    setHasUnsavedChanges(hasModified);
 
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
@@ -90,13 +89,16 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
       return;
     }
 
+    setIsSaving(true); // Start saving
     if (isEditMode) {
-      console.log(previousData);
       updateNoteMutation.mutate(currentData as Note, {
         onSuccess: () => {
           setPreviousData(currentData as Note);
           setLastSaveTime(Date.now());
-          setIsSaved(true);
+          setHasUnsavedChanges(false);
+        },
+        onSettled: () => {
+          setIsSaving(false); // Stop saving
         },
       });
     } else {
@@ -112,6 +114,10 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
             setPreviousData(newNoteData);
           }
           setLastSaveTime(Date.now());
+          setHasUnsavedChanges(false);
+        },
+        onSettled: () => {
+          setIsSaving(false); // Stop saving
         },
       });
     }
@@ -120,16 +126,29 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
   return (
     <div className="mx-auto max-w-md px-4 py-10 max-h-screen">
       <div className="flex flex-row justify-between items-center">
-        <img className="h-6 mb-2" src={logo} />
-        <Label
-          className={`px-2 py-1 rounded text-sm   ${
-            isSaved ? "text-green-800" : " text-stone-800"
-          }`}
-        >
-          {isSaved ? "Saved" : "Not Saved"}
-        </Label>
+        <img className="h-6 mb-2" src={logo} alt="logo" />
+        <div className="flex items-center space-x-2">
+          {isSaving && (
+            <Loader2 className="h-5 w-5 animate-spin text-green-500" />
+          )}
+          <Label
+            className={`px-2 py-1 rounded text-sm ${
+              isSaving
+                ? "text-stone-800"
+                : hasUnsavedChanges
+                ? "text-red-800"
+                : "text-green-800"
+            }`}
+          >
+            {isSaving
+              ? "Saving..."
+              : hasUnsavedChanges
+              ? "Unsaved Changes"
+              : "Saved"}
+          </Label>
+        </div>
       </div>
-      <form className="flex flex-col space-y-4 ">
+      <form className="flex flex-col space-y-4">
         <div className="flex justify-between items-center">
           <input
             type="text"

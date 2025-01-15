@@ -117,7 +117,6 @@ func GetUserByID(userID int) (*models.User, error) {
         return nil, fmt.Errorf("failed to query user: %v", err)
     }
 
-    // Return only the necessary fields (Username, Email)
     return &models.User{
         Username: user.Username,
         Email:    user.Email,

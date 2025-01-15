@@ -19,3 +19,13 @@ type Note struct {
 	CreatedAt time.Time `json:"created_at"`
 	LastEdit  time.Time `json:"last_edit"`
 }
+
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	Message     string `json:"message"`
+	AccessToken string `json:"accessToken"`
+}

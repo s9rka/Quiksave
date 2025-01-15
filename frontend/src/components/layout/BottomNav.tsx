@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Plus, Library, User } from 'lucide-react';
+import { Plus, Library, User } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -15,7 +15,12 @@ const navItems = [
 
 export default function BottomNav() {
   return (
-    <nav className="sticky w-full bottom-2 left-2 right-2 bg-[#EAEFF3]/50 p-4 backdrop-blur-sm">
+    <nav
+      className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50
+                    w-[calc(100%-1rem)] max-w-md
+                    rounded-xl bg-[#EAEFF3]/50 backdrop-blur-sm
+                    p-4 shadow-md"
+    >
       <ul className="flex justify-around items-center w-full">
         {navItems.map((item) => (
           <li key={item.href}>
@@ -24,7 +29,10 @@ export default function BottomNav() {
                 <TooltipTrigger>
                   <NavLink
                     to={item.href}
-                    className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D9EFBD] text-[#335F68] transition-colors hover:bg-[#D8F0C8]"
+                    className="flex h-12 w-12 items-center 
+                               justify-center rounded-2xl 
+                               bg-[#D9EFBD] text-[#335F68] 
+                               transition-colors hover:bg-[#D8F0C8]"
                   >
                     <item.icon className="w-6 h-6" />
                   </NavLink>
@@ -40,4 +48,3 @@ export default function BottomNav() {
     </nav>
   );
 }
-

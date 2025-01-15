@@ -161,7 +161,6 @@ func UpdateNoteInDB(noteID, userID int, noteData models.Note) error {
         }
     }()
 
-    // Update the note heading, content, and last_edit
     updateNoteQuery := `
         UPDATE notes
         SET heading = $1,
@@ -258,7 +257,6 @@ func GetNoteTags(userID int) ([]string, error) {
 		tags = append(tags, tag)
 	}
 
-	// Check for any errors from iterating over rows
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("error iterating rows: %w", err)
 	}
