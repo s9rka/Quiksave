@@ -7,10 +7,21 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create vaults for bearing notes
+CREATE TABLE IF NOT EXISTS vaults (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(name, user_id) -- Ensure unique vault names per user
+);
+
 -- Create the notes table
 CREATE TABLE IF NOT EXISTS notes (
     id SERIAL PRIMARY KEY,
     user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vault_id INT NOT NULL REFERENCES vaults(id) ON DELETE CASCADE,
     heading TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -36,3 +47,4 @@ CREATE TABLE IF NOT EXISTS note_tags (
 -- Create indexing for efficient queries
 CREATE INDEX idx_notes_user_id ON notes(user_id);
 CREATE INDEX idx_tags_user_id ON tags(user_id);
+

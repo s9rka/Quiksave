@@ -4,13 +4,17 @@ import { Label } from "../ui/label";
 import { useLogin } from "@/services/mutations";
 import { LoginCredentials } from "@/lib/types";
 import { useForm, SubmitHandler } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const loginMutation = useLogin();
   const { register, handleSubmit } = useForm<LoginCredentials>();
 
+  const navigate = useNavigate();
+
   const onSubmit: SubmitHandler<LoginCredentials> = (data) => {
     loginMutation.mutate(data);
+    navigate("/vaults")
   };
 
   return (

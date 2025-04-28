@@ -1,29 +1,44 @@
-import { NavLink } from "react-router-dom";
-import { Plus, Library, User } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
+import { Plus, Library } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-const navItems = [
-  { icon: Library, label: "Storage", href: "/" },
-  { icon: User, label: "Account", href: "/account" },
-  { icon: Plus, label: "Create Note", href: "/new" },
-];
+import { useVault } from "@/context/VaultContext";
 
 export default function BottomNav() {
+  const { vaultId } = useVault();
+  const location = useLocation();
+  
+  // Determine if we're inside a vault by checking the URL pattern
+  const isInVault = location.pathname.startsWith('/vault/');
+
+  // Dynamic nav items - "Create Note" href changes based on location
+  const navItems = [
+    { 
+      icon: Library, 
+      label: "Storage", 
+      href: isInVault && vaultId ? `/vault/${vaultId}` : "/vaults" 
+    },
+    { 
+      icon: Plus, 
+      label: "Create Note", 
+      href: isInVault && vaultId ? `/vault/${vaultId}/new` : "/vaults"
+    },
+  ];
+
   return (
     <nav
       className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50
-                    w-[calc(100%-1rem)] max-w-md
+                    max-w-md
                     rounded-xl bg-[#EAEFF3]/50 backdrop-blur-sm
                     p-4 shadow-md"
     >
       <ul className="flex justify-around items-center w-full">
         {navItems.map((item) => (
-          <li key={item.href}>
+          <li key={item.label}>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger>

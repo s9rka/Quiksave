@@ -1,17 +1,17 @@
-import { AuthResponse, CreateNote, Note, Tag } from "@/lib/types";
+import { AuthResponse, CreateNote, Note, Tag, Vault, VaultFormData } from "@/lib/types";
 import { privateClient, publicClient } from "./apiClient";
 import { LoginCredentials, RegisterCredentials } from "@/lib/types";
 
-export const getNoteIds = async () => {
-  const response = (await privateClient.get<Note[]>("/get-notes")).data.map(
+export const getNoteIds = async (vaultId: number) => {
+  const response = (await privateClient.get<Note[]>(`/get-notes?vaultId=${vaultId}`)).data.map(
     (note) => note.id
   );
 
   return response;
 };
 
-export const getNotes = async () => {
-  return (await privateClient.get<Note[]>("/get-notes")).data;
+export const getNotes = async (vaultId: number) => {
+  return (await privateClient.get<Note[]>(`/get-notes?vaultId=${vaultId}`)).data;
 };
 
 export async function createNote(note: CreateNote) {
@@ -19,17 +19,16 @@ export async function createNote(note: CreateNote) {
 }
 
 export async function editNote(note: Note) {
-  return await privateClient.put(`/note/${note.id}`, note);
+  return await privateClient.put(`/note/${note.id}?vaultId=${note.vaultId}`, note);
 }
 
-export const getNoteById = async (id: number): Promise<Note> => {
-  const response = await privateClient.get(`/note/${id}`);
+export const getNoteById = async (id: number, vaultId: number): Promise<Note> => {
+  const response = await privateClient.get(`/note/${id}?vaultId=${vaultId}`);
   return response.data;
 };
 
-
-export const deleteNote = async (id: number) => {
-  return (await privateClient.delete(`/note/${id}`));
+export const deleteNote = async (id: number, vaultId: number) => {
+  return (await privateClient.delete(`/note/${id}?vaultId=${vaultId}`));
 };
 
 export const login = async ({ username, password }: LoginCredentials) => {
@@ -58,3 +57,18 @@ export const getUser = async () => {
 export const getTags = async (): Promise<Tag[]> => {
   return (await privateClient.get('/tags')).data
 }
+
+export const createVault = async (vaultData: VaultFormData) => {
+    const response = await privateClient.post<{ vaultID: number }>('/create-vault', vaultData);
+    return response.data;
+};
+
+export const getVaults = async () => {
+    const response = await privateClient.get<Vault[]>('/get-vaults');
+    return response.data;
+};
+
+export const getVaultById = async (vaultId: number) => {
+    const response = await privateClient.get<Vault>(`/vault/${vaultId}`);
+    return response.data;
+};

@@ -7,7 +7,7 @@ export const PublicRoute = () => {
   console.log("PublicRoute, user", user?.username);
 
   if (user) {
-    return <Navigate to={`/${user.username}`} replace />;
+    return <Navigate to={`/vaults`} replace />;
   } else {
     return <Outlet />;
   }

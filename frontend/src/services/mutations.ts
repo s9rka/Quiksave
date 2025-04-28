@@ -11,6 +11,7 @@ import {
   login,
   logout,
   register,
+  createVault,
 } from "./api";
 
 export const useCreateNote = () => {
@@ -71,7 +72,7 @@ export const useDeleteNote = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: number) => deleteNote(id),
+    mutationFn: ({ id, vaultId }: { id: number; vaultId: number }) => deleteNote(id, vaultId),
     onSuccess: () => {
       console.log("deleted successfully");
     },
@@ -131,3 +132,18 @@ export const useLogout = () => {
     },
   });
 };
+
+export const useCreateVault = () => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+
+  return useMutation({
+      mutationFn: createVault,
+      onSuccess: (data) => {
+          queryClient.invalidateQueries({ queryKey: ['vaults'] });
+          if (data.vaultID) {
+              navigate(`/vault/${data.vaultID}`);
+          }
+      },
+  });
+}; 

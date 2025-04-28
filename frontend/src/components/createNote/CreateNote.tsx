@@ -6,17 +6,25 @@ import { hasChanges } from "@/utils/utils";
 import { Label } from "../ui/label";
 import logo from "@/assets/logo.svg";
 import { Loader2 } from "lucide-react";
+import { useVault } from "@/context/VaultContext";
 
 type CreateFormProps = {
   initialNote?: Note;
 };
 
 const CreateForm = ({ initialNote }: CreateFormProps) => {
+  const { vaultId } = useVault();
+
+  if (!vaultId) {
+    return <div>No vault selected</div>;
+  }
+
   const { register, watch, setValue } = useForm<Partial<Note>>({
     defaultValues: initialNote ?? {
       heading: "",
       content: "",
       tags: [],
+      vaultId,
     },
   });
 
@@ -83,6 +91,7 @@ const CreateForm = ({ initialNote }: CreateFormProps) => {
       heading,
       content,
       tags,
+      vaultId,
     } as Partial<Note>;
 
     if (previousData && !hasChanges(previousData, currentData)) {

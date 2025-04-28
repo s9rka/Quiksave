@@ -13,6 +13,7 @@ type User struct {
 type Note struct {
 	ID        int       `json:"id"`
 	UserID    int       `json:"userId"`
+	VaultID   int       `json:"vaultId"`
 	Heading   string    `json:"heading"`
 	Content   string    `json:"content"`
 	Tags      []string  `json:"tags"`
@@ -28,4 +29,12 @@ type LoginRequest struct {
 type LoginResponse struct {
 	Message     string `json:"message"`
 	AccessToken string `json:"accessToken"`
+}
+
+type Vault struct {
+	ID          int       `json:"id"`
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	UserID      int       `json:"userId"`
+	CreatedAt   time.Time `json:"created_at"`
 }

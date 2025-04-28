@@ -66,7 +66,7 @@
     @apply bg-background text-foreground font-sans;
   }
   #root {
-    @apply min-h-screen;
+    
   }
 
   h1 {

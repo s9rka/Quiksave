@@ -3,7 +3,7 @@ services:
     image: postgres:15
     container_name: nota-bene-db
     ports:
-      - "5432:5432"
+      - "5436:5432"
     environment:
       POSTGRES_USER: nota-bene-admin
       POSTGRES_PASSWORD: passPass1

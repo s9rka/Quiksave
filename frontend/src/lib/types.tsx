@@ -1,7 +1,20 @@
+export interface Vault {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface VaultFormData {
+  name: string;
+  description: string;
+}
+
 export interface CreateNote {
   heading: string;
   content: string;
   tags: string[];
+  vaultId: number;
 }
 
 export interface Note extends CreateNote {
@@ -31,3 +44,5 @@ export interface User {
 }
 
 export type Tag = string;
+
+
